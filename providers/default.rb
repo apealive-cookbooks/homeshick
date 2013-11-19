@@ -25,70 +25,70 @@ action :create do
     repo = key.split("/").last
 
     execute "homeshick_clone_#{new_resource.username}_homeshick" do
-      command "git clone git://github.com/andsens/homeshick.git #{homesick_directory_for("homeshick")}"
+      command "git clone git://github.com/andsens/homeshick.git #{homeshick_directory_for("homeshick").to_s}"
       action :nothing
 
       user new_resource.username
       group new_resource.group || new_resource.username
 
       environment(
-        "HOME" => home_directory
+        "HOME" => home_directory.to_s
       )
 
       not_if do
-        homesick_directory_for("homeshick").directory?
+        homeshick_directory_for("homeshick").directory?
       end
     end.run_action(:run)
 
     execute "homeshick_clone_#{new_resource.username}_#{repo}" do
-      command "source #{homesick_directory_for("homeshick").join("homeshick.sh")} && homeshick -f clone #{key}"
+      command "git clone git://github.com/#{key}.git #{homeshick_directory_for(repo).to_s}"
       action :run
 
       user new_resource.username
       group new_resource.group || new_resource.username
 
       environment(
-        "HOME" => home_directory
+        "HOME" => home_directory.to_s
       )
 
       not_if do
-        homesick_directory_for(key).directory?
+        homeshick_directory_for(key).directory?
       end
 
-      notifies :run, "execute[homesick_link_#{new_resource.username}_#{repo}]", :immediately
+      notifies :run, "execute[homeshick_link_#{new_resource.username}_#{repo}]", :immediately
     end
 
-    execute "homeshick_refresh_#{new_resource.username}_#{repo}" do
-      command "source #{homesick_directory_for("homeshick").join("homeshick.sh")} && homeshick -f refresh 7 #{repo}"
+    execute "homeshick_pull_#{new_resource.username}_#{repo}" do
+      command "#{homeshick_directory_for("homeshick").join("bin", "homeshick").to_s} -f pull #{repo}"
       action :run
 
       user new_resource.username
       group new_resource.group || new_resource.username
 
       environment(
-        "HOME" => home_directory
+        "HOME" => home_directory.to_s
       )
 
       only_if do
-        homesick_directory_for(key).directory?
+        homeshick_directory_for(key).directory?
       end
 
-      notifies :run, "execute[homesick_link_#{new_resource.username}_#{repo}]", :immediately
+      notifies :run, "execute[homeshick_link_#{new_resource.username}_#{repo}]", :immediately
     end
 
     execute "homeshick_link_#{new_resource.username}_#{repo}" do
-      command "source #{homesick_directory_for("homeshick").join("homeshick.sh")} && homeshick -f link #{repo}"
+      command "#{homeshick_directory_for("homeshick").join("bin", "homeshick").to_s} -f link #{repo}"
       action :nothing
 
       user new_resource.username
       group new_resource.group || new_resource.username
 
       environment(
-        "HOME" => home_directory
+        "HOME" => home_directory.to_s
       )
 
       only_if do
-        homesick_directory_for(key).directory?
+        homeshick_directory_for(key).directory?
       end
     end
   end
@@ -102,7 +102,7 @@ action :delete do
 
     # TODO: unlink outdated files
     
-    directory homesick_directory_for(key) do
+    directory homeshick_directory_for(key).to_s do
       action :delete
     end
 
@@ -113,7 +113,7 @@ action :delete do
   new_resource.updated_by_last_action(true)
 end
 
-def homesick_directory_for(key)
+def homeshick_directory_for(key)
   home_directory.join(".homesick", "repos", key.split("/").last)
 end
 
