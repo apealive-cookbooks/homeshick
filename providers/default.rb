@@ -120,7 +120,7 @@ end
 protected
 
 def home_directory
-  @homedirectory ||= begin
+  @home_directory ||= begin
     value = if new_resource.home
       new_resource.home
     else
