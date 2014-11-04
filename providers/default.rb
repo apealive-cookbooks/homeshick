@@ -101,7 +101,7 @@ action :delete do
     repo = key.split("/").last
 
     # TODO: unlink outdated files
-    
+
     directory homeshick_directory_for(key).to_s do
       action :delete
     end
@@ -116,8 +116,6 @@ end
 def homeshick_directory_for(key)
   home_directory.join(".homesick", "repos", key.split("/").last)
 end
-
-protected
 
 def home_directory
   @home_directory ||= begin
